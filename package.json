@@ -1,0 +1,21 @@
+{
+  "name": "reviews-api",
+  "version": "1.0.0",
+  "description": "API for reading/writing reviews data",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "load-sql": "PGPASSWORD=postgres psql -U postgres -h localhost -d postgres -f schema.sql",
+    "load-mongo": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rfp2207Frodo/rfp2207-Reviews-API.git"
+  },
+  "author": "Dan Tran",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rfp2207Frodo/rfp2207-Reviews-API/issues"
+  },
+  "homepage": "https://github.com/rfp2207Frodo/rfp2207-Reviews-API#readme"
+}
