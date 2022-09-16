@@ -252,3 +252,10 @@ DROP TABLE temporary_false;
 -- SELECT review_id, COUNT (*) FROM review_characteristic
 -- WHERE value = 1
 -- GROUP BY review_id;
+
+
+
+
+-- SELECT pc.id, pc.product_id, pc.name, rc.review_id, rc.value FROM product_characteristic AS pc
+-- INNER JOIN review_characteristic AS rc
+-- ON pc.id = rc.characteristic_id LIMIT 30;
