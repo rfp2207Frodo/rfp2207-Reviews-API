@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "test",
+    "start": "node server",
     "load-sql": "PGPASSWORD=postgres psql -U postgres -h localhost -d postgres -f schema.sql",
     "load-mongo": ""
   },
@@ -17,5 +18,12 @@
   "bugs": {
     "url": "https://github.com/rfp2207Frodo/rfp2207-Reviews-API/issues"
   },
-  "homepage": "https://github.com/rfp2207Frodo/rfp2207-Reviews-API#readme"
+  "homepage": "https://github.com/rfp2207Frodo/rfp2207-Reviews-API#readme",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.2",
+    "express": "^4.18.1",
+    "mongoose": "^6.6.1",
+    "pg": "^8.8.0"
+  }
 }
