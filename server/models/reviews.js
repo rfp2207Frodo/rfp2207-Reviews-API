@@ -1,182 +1,123 @@
 const db = require('../db.js');
 
-module.exports = {
-  get: async(product_id, sort, page, count) => {
-    let sortQuery;
-    switch (sort) {
-      case 'newest':
-        sortQuery = `ORDER BY id`;
-        break;
-      case 'helpful':
-        sortQuery = `ORDER BY helpfulness`;
-        break;
-      case 'relevant':
-        sortQuery = `ORDER BY helpfulness`; //placeholder sort, figure out actual sorting mechanism here
-        break;
-    }
-
-    const mapPhotos = (review) => {
-      let queryPhotos = `SELECT id, url FROM review_photo WHERE review_id = ${review.id} LIMIT 5`
-
-      return db
-      .query(queryPhotos)
-      .then((res) => {
-        let date = new Date(0);
-        date.setUTCSeconds(parseInt(review.date));
-        review.date = date;
-        return review.photos = res.rows;
-      })
-      .catch((err) => console.log(err));
-    };
-
-    let queryReviews =
-    `SELECT * FROM review WHERE product_id = ${product_id} AND reported = false
-    ${sortQuery}
-    OFFSET ${(page - 1) * count} LIMIT ${count}`;
-
-    const client = await db.connect();
-    let results = await client
-      .query(queryReviews)
-      .then(async(res) => {
-        await Promise.all(res.rows.map(mapPhotos));
-        client.release();
-        return res.rows;
-      })
-      .catch((err) => {
-        client.release();
-        console.log(err);
-      })
-
-    return {
-      'product': product_id.toString(),
-      'page': page - 1,
-      'count': count,
-      'results': results
-    };
-  },
-
-  getMetadata: async() => {
-
-  },
-
-  post: async() => {
-
-  },
-
-  updateHelpful: async() => {
-
-  },
-
-  updateReport: async() => {
-
+const get = async(product_id, sort, page, count) => {
+  let sortQuery;
+  switch (sort) {
+    case 'newest':
+      sortQuery = `ORDER BY id ASC`;
+      break;
+    case 'helpful':
+      sortQuery = `ORDER BY helpfulness ASC`;
+      break;
+    case 'relevant':
+      sortQuery = `ORDER BY helpfulness DESC, id ASC`;
+      break;
   }
+
+  let queryReviews =
+  `SELECT id AS review_id, rating, summary, body, recommend, response, body, date, reviewer_name, helpfulness
+  FROM review WHERE product_id = ${product_id} AND reported = false
+  ${sortQuery}
+  OFFSET ${(page - 1) * count} LIMIT ${count}`;
+
+  const client = await db.connect();
+  let results = await client
+    .query(queryReviews)
+    .then(async(res) => {
+      await Promise.all(res.rows.map(mapPhotos));
+      client.release();
+      return res.rows;
+    })
+    .catch((err) => {
+      client.release();
+      console.log(err);
+    })
+
+  function mapPhotos(review) {
+    let queryPhotos = `SELECT id, url FROM review_photo WHERE review_id = ${review.review_id} LIMIT 5`
+    let date = new Date(0);
+    date.setUTCSeconds(parseInt(review.date));
+    review.date = date;
+    review.photos = [];
+
+    return db
+    .query(queryPhotos)
+    .then((res) => {
+      return review.photos = res.rows;
+    })
+    .catch((err) => console.log(err));
+  };
+
+  return {
+    'product': product_id.toString(),
+    'page': page - 1,
+    'count': count,
+    'results': results
+  };
 };
 
+const post = async({ product_id, rating, summary, body, recommend, name, email, photos, characteristics }) => {
+  let queryReview =
+  `INSERT INTO review (product_id, rating, summary, body, recommend, reviewer_name, reviewer_email)
+  VALUES (${product_id}, ${rating}, '${summary}', '${body}', ${recommend}, '${name}', '${email}')
+  RETURNING id`;
+  let queryProduct =
+  `UPDATE product SET "${rating}" = "${rating}" + 1, "${recommend}" = "${recommend}" + 1
+  WHERE id = ${product_id}`;
 
+  const client = await db.connect();
 
-/*
-var utcSeconds = 1234567890;
-var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-d.setUTCSeconds(utcSeconds);
-*/
+  //Room to optimize by inserting review, retrieving review id, then calling all other inserts/updates at the same time instead of
+  //  doing awaits one at a time
+  let error = false;
 
+  let review_id = await client
+  .query(queryReview)
+  .then((res) => {
+    return res.rows[0].id;
+  })
+  .catch((err) => console.log(err));
 
-//get reviews
+  await client
+  .query(queryProduct)
+  .catch((err) => {
+    console.log(err)
+    return error = true;
+  });
 
-/*
-page	      integer	  Selects the page of results to return. Default 1.
-  OFFSET (multiply page by count, page will start at 0 (page - 1))
-count	      integer	  Specifies how many results per page to return. Default 5.
-  LIMIT
-sort	      text	    Changes the sort order of reviews to be based on "newest", "helpful", or "relevant"  <-- default to newest if not specified?
-    newest -> order by id? date?
-    helpful -> order by helpfulness
-    relevant -> order by helpfulness with some weight on id/date?
-product_id	integer 	Specifies the product for which to retrieve reviews.
-*/
+  for (let photo of photos) {
+    let queryPhoto =
+    `INSERT INTO review_photo (review_id, url)
+    VALUES (${review_id}, '${photo}')`;
 
-/*
-{
-  "product": "2",
-  "page": 0,
-  "count": 5,                     <------------- Make sure to return these three properties
-  "results": [
-    {
-      "review_id": 5,
-      "rating": 3,
-      "summary": "I'm enjoying wearing these shades",
-      "recommend": false,
-      "response": null,
-      "body": "Comfortable and practical.",
-      "date": "2019-04-14T00:00:00.000Z",                              <---------- Transform date to this format (or maybe a more readable one since frontend allows)
-      "reviewer_name": "shortandsweeet",
-      "helpfulness": 5,
-      "photos": [{
-          "id": 1,
-          "url": "urlplaceholder/review_5_photo_number_1.jpg"          <---------- Attach array of photos to each result
-        },
-        {
-          "id": 2,
-          "url": "urlplaceholder/review_5_photo_number_2.jpg"
-        },
-        // ...
-      ]
-    },
-    {
-      "review_id": 3,
-      "rating": 4,
-      "summary": "I am liking these glasses",
-      "recommend": false,
-      "response": "Glad you're enjoying the product!",
-      "body": "They are very dark. But that's good because I'm in very sunny spots",
-      "date": "2019-06-23T00:00:00.000Z",
-      "reviewer_name": "bigbrotherbenjamin",
-      "helpfulness": 5,
-      "photos": [],
-    },
-    // ...
-  ]
-}
-*/
+    await client
+    .query(queryPhoto)
+    .catch((err) => {
+      console.log(err)
+      return error = true;
+    });
+  }
 
-//get review metadata for a product
+  for (let characteristic of Object.entries(characteristics)) {
+    let queryProductCharacteristic =
+    `UPDATE product_characteristic SET "${characteristic[1]}" = "${characteristic[1]}" + 1
+    WHERE id = ${characteristic[0]} AND product_id = ${product_id}`;
+    let queryReviewCharacteristic =
+    `INSERT INTO review_characteristic (characteristic_id, review_id, value)
+    VALUES (${characteristic[0]}, ${review_id}, ${characteristic[1]})`;
 
-/*
-product_id	integer	Required ID of the product for which data should be returned
-*/
+    await client
+    .query(queryProductCharacteristic)
+    .then(() => client.query(queryReviewCharacteristic))
+    .catch((err) => {
+      console.log(err)
+      return error = true;
+    });
+  }
 
-/*
-{
-  "product_id": "2",
-  "ratings": {
-    2: 1,
-    3: 1,
-    4: 2,
-    // ...
-  },
-  "recommended": {
-    0: 5
-    // ...
-  },
-  "characteristics": {
-    "Size": {
-      "id": 14,            <------------- Grab characteristic id (product characteristic, not review characteristic)
-      "value": "4.0000"    <------------- Calculate average
-    },
-    "Width": {
-      "id": 15,
-      "value": "3.5000"
-    },
-    "Comfort": {
-      "id": 16,
-      "value": "4.0000"
-    },
-    // ...
-}
-*/
+  client.release();
+  return error;
+};
 
-//post a review
-
-//update helpful review
-
-//report review
+exports.get = get;
+exports.post = post;
