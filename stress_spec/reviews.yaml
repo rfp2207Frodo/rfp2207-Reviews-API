@@ -1,0 +1,22 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    -  duration: 60
+       arrivalRate: 20
+       name: Warm up
+    -  duration: 120
+       arrivalRate: 20
+       rampTo: 40
+       name: Ramp up load
+    -  duration: 600
+       arrivalRate: 40
+       name: Sustained load
+    -  duration: 60
+       arrivalRate: 80
+       name: It's lunch time, get ready
+
+scenarios:
+  - name: "Survive this, fool"
+    flow:
+      -  get:
+          url: "/reviews?product_id={{$randomNumber(1,1000000)}}"

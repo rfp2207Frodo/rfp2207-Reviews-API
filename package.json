@@ -7,7 +7,8 @@
     "test": "test",
     "start": "node server",
     "load-sql": "PGPASSWORD=postgres psql -U postgres -h localhost -d postgres -f schema.sql",
-    "load-mongo": ""
+    "load-mongo": "",
+    "stress-test": "artillery run stress_spec/reviews.yaml"
   },
   "repository": {
     "type": "git",

@@ -11,6 +11,7 @@ const get = async(req, res) => {
   sort = sort || 'relevant';
   page = page || 1;
   count = count || 5;
+  //consider finding a way to reconnect after some time if an error occurs(maybe during bottlenecking?)
 
   let result = await reviews.get(product_id, sort, page, count);
 
