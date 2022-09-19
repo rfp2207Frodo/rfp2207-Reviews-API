@@ -26,8 +26,6 @@ const post = async(req, res) => {
     return res.sendStatus(422);
   }
 
-  // let { product_id, rating, summary, body, recommend, name, email, photos, characteristics } = req.body;
-
   let result = await reviews.post(req.body);
 
   if (!result) {
@@ -38,11 +36,11 @@ const post = async(req, res) => {
 };
 
 const validatePost = ({ product_id, rating, summary, body, recommend, name, email, photos, characteristics }) => {
-  if (!product_id || typeof product_id !== 'number') {
+  if (!product_id || typeof product_id !== 'number' || product_id < 1) {
     return false;
   }
 
-  if (!rating || typeof rating !== 'number') {
+  if (!rating || typeof rating !== 'number' || rating < 1 || rating > 5) {
     return false;
   }
 
@@ -72,6 +70,18 @@ const validatePost = ({ product_id, rating, summary, body, recommend, name, emai
 
   if (!(typeof characteristics === 'object' && !Array.isArray(characteristics)) || Object.keys(characteristics).length === 0 || Object.keys(characteristics).length > 6) {
     return false;
+  }
+
+  for (let characteristic_id of Object.keys(characteristics)) {
+    if (typeof characteristic_id !== 'string' || Number.isNaN(parseInt(characteristic_id)) || parseInt(characteristic_id) < 1) {
+      return false;
+    }
+  }
+
+  for (let rating of Object.values(characteristics)) {
+    if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+      return false;
+    }
   }
 
   return true;

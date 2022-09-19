@@ -284,3 +284,10 @@ UPDATE product_characteristic AS pc SET "5" =
 COALESCE((SELECT count FROM temporary_5value AS t WHERE pc.id = t.characteristic_id), 0);
 
 DROP TABLE temporary_5value;
+
+--Create indexes to enhance query times
+
+CREATE INDEX review_product_id_index ON review (product_id);
+CREATE INDEX product_characteristic_product_id_index ON product_characteristic (product_id);
+CREATE INDEX review_characteristic_characteristic_id_index ON review_characteristic (characteristic_id);
+CREATE INDEX review_photo_review_id_index ON review_photo (review_id);
