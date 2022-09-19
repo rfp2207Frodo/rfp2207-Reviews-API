@@ -12,6 +12,10 @@ config:
        arrivalRate: 40
        name: Sustained load
     -  duration: 60
+       arrivalRate: 40
+       rampTo: 80
+       name: Oh no, it's almost lunch time
+    -  duration: 120
        arrivalRate: 80
        name: It's lunch time, get ready
 

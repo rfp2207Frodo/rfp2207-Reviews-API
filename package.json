@@ -4,11 +4,11 @@
   "description": "API for reading/writing reviews data",
   "main": "index.js",
   "scripts": {
-    "test": "test",
     "start": "node server",
     "load-sql": "PGPASSWORD=postgres psql -U postgres -h localhost -d postgres -f schema.sql",
     "load-mongo": "",
-    "stress-test": "artillery run stress_spec/reviews.yaml"
+    "stress-test": "artillery run --output report.json stress_spec/reviews.yaml",
+    "stress-test-report": "artillery report report.json"
   },
   "repository": {
     "type": "git",
