@@ -10,7 +10,6 @@ const validatePost = ({
   photos,
   characteristics,
 }) => {
-  console.log(photos.length);
   if (!product_id || typeof product_id !== 'number' || product_id < 1) {
     return false;
   }
