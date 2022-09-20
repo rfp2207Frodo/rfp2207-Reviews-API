@@ -1,4 +1,4 @@
-exports.reviews = require('./reviews.js');
-exports.meta = require('./meta.js');
-exports.helpful = require('./helpful.js');
-exports.report = require('./report.js');
+exports.reviews = require('./reviews');
+exports.meta = require('./meta');
+exports.helpful = require('./helpful');
+exports.report = require('./report');

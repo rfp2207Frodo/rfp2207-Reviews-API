@@ -1,5 +1,10 @@
+/* eslint-disable camelcase */
+/* eslint-disable no-unused-vars */
+/* eslint-disable spaced-comment */
+/* eslint-disable new-cap */
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/reviews', {useNewUrlParser: true, useUnifiedTopology: true});
+
+mongoose.connect('mongodb://localhost:27017/reviews', { useNewUrlParser: true, useUnifiedTopology: true });
 
 const db = mongoose.connection;
 
@@ -17,6 +22,6 @@ const reviewSchema = new mongoose.schema({
   reviewer_email: { type: String, required: true },
   helpfulness: { type: Number, default: 0 },
   reported: { type: Boolean, default: false },
-  photos: [{photo_id: Number, url: String}],
-  characteristics: [{characteristic_id: Number, value: Number}]
+  photos: [{ photo_id: Number, url: String }],
+  characteristics: [{ characteristic_id: Number, value: Number }],
 });

@@ -1,9 +1,10 @@
 require('dotenv').config();
 const express = require('express');
+
 const app = express();
 const port = process.env.PORT;
-const router = require('./router.js');
-const db = require('./db.js');
+const router = require('./router');
+const db = require('./db');
 
 app.use(express.json());
 
@@ -14,15 +15,15 @@ const server = app.listen(port, () => {
 });
 
 process.on('SIGTERM', () => (
-  server.close(async() => {
+  server.close(async () => {
     await db.end();
-    console.log('Server closed SIGTERM')
+    console.log('Server closed SIGTERM');
   })
 ));
 
 process.on('SIGINT', () => (
-  server.close(async() => {
+  server.close(async () => {
     await db.end();
-    console.log('Server closed SIGINT')
+    console.log('Server closed SIGINT');
   })
 ));

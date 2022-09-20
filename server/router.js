@@ -1,5 +1,10 @@
-const { reviews, meta, helpful, report } = require('./controllers');
 const router = require('express').Router();
+const {
+  reviews,
+  meta,
+  helpful,
+  report,
+} = require('./controllers');
 
 router.get('', reviews.get);
 
