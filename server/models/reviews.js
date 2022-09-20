@@ -3,9 +3,6 @@ const db = require('../db');
 
 function mapPhotos(review) {
   const queryPhotos = `SELECT id, url FROM review_photo WHERE review_id = ${review.review_id} LIMIT 5`;
-  const date = new Date(0);
-  date.setUTCSeconds(parseInt(review.date));
-  review.date = date;
   review.photos = [];
 
   return db

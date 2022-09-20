@@ -17,13 +17,13 @@ const server = app.listen(port, () => {
 process.on('SIGTERM', () => (
   server.close(async () => {
     await db.end();
-    console.log('Server closed SIGTERM');
+    console.log('\nServer closed SIGTERM');
   })
 ));
 
 process.on('SIGINT', () => (
   server.close(async () => {
     await db.end();
-    console.log('Server closed SIGINT');
+    console.log('\nServer closed SIGINT');
   })
 ));

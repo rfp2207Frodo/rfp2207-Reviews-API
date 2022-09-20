@@ -36,7 +36,8 @@ CREATE TABLE review (
   id SERIAL PRIMARY KEY UNIQUE,
   product_id INTEGER NOT NULL,
   rating INTEGER NOT NULL,
-  date NUMERIC DEFAULT(CAST (EXTRACT (epoch FROM localtimestamp) AS bigint)),
+  -- date NUMERIC DEFAULT(CAST (EXTRACT (epoch FROM localtimestamp) AS bigint)),
+  date VARCHAR,
   summary VARCHAR(250) NOT NULL,
   body VARCHAR(1000) NOT NULL,
   recommend BOOLEAN NOT NULL,
@@ -65,6 +66,12 @@ CREATE TABLE review_characteristic (
 --Copy reviews.csv into review table
 \copy review FROM './data/reviews.csv' CSV HEADER;
 
+--Update review date from epoch to human-readable timestamp
+
+UPDATE review SET date = to_timestamp(date::numeric / 1000);
+ALTER TABLE review ALTER COLUMN date TYPE timestamp with time zone USING date::timestamp with time zone;
+ALTER TABLE review ALTER COLUMN date SET DEFAULT NOW();
+
 --Copy reviews_photos.csv into review_photo table
 \copy review_photo FROM './data/reviews_photos.csv' CSV HEADER;
 
@@ -79,7 +86,6 @@ CREATE TABLE review_characteristic (
 SELECT setval(pg_get_serial_sequence('review', 'id'), coalesce(max(id),0) + 1, false) FROM review;
 SELECT setval(pg_get_serial_sequence('review_characteristic', 'id'), coalesce(max(id),0) + 1, false) FROM review_characteristic;
 SELECT setval(pg_get_serial_sequence('review_photo', 'id'), coalesce(max(id),0) + 1, false) FROM review_photo;
-
 
 --Copy products.csv into temporary table to copy into products table
 CREATE TABLE temporary_product (
@@ -128,7 +134,6 @@ COALESCE((SELECT count FROM temporary_2star AS t WHERE p.id = t.product_id), 0);
 
 DROP TABLE temporary_2star;
 
-
 --------
 
 CREATE TABLE temporary_3star (
@@ -143,7 +148,6 @@ UPDATE product AS p SET "3" =
 COALESCE((SELECT count FROM temporary_3star AS t WHERE p.id = t.product_id), 0);
 
 DROP TABLE temporary_3star;
-
 
 -------
 
@@ -160,7 +164,6 @@ COALESCE((SELECT count FROM temporary_4star AS t WHERE p.id = t.product_id), 0);
 
 DROP TABLE temporary_4star;
 
-
 ------
 
 CREATE TABLE temporary_5star (
@@ -175,7 +178,6 @@ UPDATE product AS p SET "5" =
 COALESCE((SELECT count FROM temporary_5star AS t WHERE p.id = t.product_id), 0);
 
 DROP TABLE temporary_5star;
-
 
 ------- Recommended
 
@@ -192,7 +194,6 @@ COALESCE((SELECT count FROM temporary_true AS t WHERE p.id = t.product_id), 0);
 
 DROP TABLE temporary_true;
 
-
 --------
 
 CREATE TABLE temporary_false (
@@ -207,8 +208,6 @@ UPDATE product AS p SET "false" =
 COALESCE((SELECT count FROM temporary_false AS t WHERE p.id = t.product_id), 0);
 
 DROP TABLE temporary_false;
-
-
 
 --Update total characteristic ratings for each product
 
