@@ -6,12 +6,12 @@ const put = async (review_id) => {
   const client = await db.connect();
   return client
     .query(queryString)
-    .then((result) => {
-      client.release();
+    .then(async (result) => {
+      await client.release();
       return result;
     })
-    .catch((err) => {
-      client.release();
+    .catch(async (err) => {
+      await client.release();
       return console.log(err);
     });
 };

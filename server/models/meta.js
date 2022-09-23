@@ -39,12 +39,12 @@ const get = async (product_id) => {
 
   await client
     .query(queryCharacteristics)
-    .then((res) => {
-      client.release();
+    .then(async (res) => {
+      await client.release();
       characteristicData = res.rows;
     })
-    .catch((err) => {
-      client.release();
+    .catch(async (err) => {
+      await client.release();
       console.log(err);
     });
 

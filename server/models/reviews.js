@@ -1,18 +1,6 @@
 /* eslint-disable no-param-reassign */
 const db = require('../db');
 
-function mapPhotos(review) {
-  const queryPhotos = `SELECT id, url FROM review_photo WHERE review_id = ${review.review_id} LIMIT 5`;
-  review.photos = [];
-
-  return db
-    .query(queryPhotos)
-    .then((res) => {
-      review.photos = res.rows;
-    })
-    .catch((err) => console.log(err));
-}
-
 const get = async (product_id, sort, page, count) => {
   let sortQuery;
   switch (sort) {
@@ -27,12 +15,24 @@ const get = async (product_id, sort, page, count) => {
       break;
   }
 
+  const client = await db.connect();
+
+  function mapPhotos(review) {
+    const queryPhotos = `SELECT id, url FROM review_photo WHERE review_id = ${review.review_id} LIMIT 5`;
+    review.photos = [];
+    return client
+      .query(queryPhotos)
+      .then((res) => {
+        review.photos = res.rows;
+      })
+      .catch((err) => console.log(err));
+  }
+
   const queryReviews = `SELECT id AS review_id, rating, summary, body, recommend, response, body, date, reviewer_name, helpfulness
   FROM review WHERE product_id = ${product_id} AND reported = false
   ${sortQuery}
   OFFSET ${(page - 1) * count} LIMIT ${count}`;
 
-  const client = await db.connect();
   const results = await client
     .query(queryReviews)
     .then(async (res) => {
@@ -115,7 +115,7 @@ const post = async ({
       });
   }));
 
-  client.release();
+  await client.release();
   return error;
 };
 

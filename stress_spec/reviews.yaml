@@ -2,21 +2,21 @@ config:
   target: "http://localhost:3000"
   phases:
     -  duration: 60
-       arrivalRate: 20
+       arrivalRate: 50
        name: Warm up
     -  duration: 120
-       arrivalRate: 20
-       rampTo: 40
+       arrivalRate: 50
+       rampTo: 100
        name: Ramp up load
     -  duration: 600
-       arrivalRate: 40
+       arrivalRate: 100
        name: Sustained load
     -  duration: 60
-       arrivalRate: 40
-       rampTo: 80
+       arrivalRate: 100
+       rampTo: 200
        name: Oh no, it's almost lunch time
     -  duration: 120
-       arrivalRate: 80
+       arrivalRate: 200
        name: It's lunch time, get ready
 
 scenarios:
