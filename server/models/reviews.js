@@ -17,33 +17,20 @@ const get = async (product_id, sort, page, count) => {
 
   const client = await db.connect();
 
-  function mapPhotos(review) {
-    const queryPhotos = `SELECT id, url FROM review_photo WHERE review_id = ${review.review_id} LIMIT 5`;
-    review.photos = [];
-    return client
-      .query(queryPhotos)
-      .then((res) => {
-        review.photos = res.rows;
-      })
-      .catch((err) => console.log(err));
-  }
-
-  const queryReviews = `SELECT id AS review_id, rating, summary, body, recommend, response, body, date, reviewer_name, helpfulness
-  FROM review WHERE product_id = ${product_id} AND reported = false
+  const queryReviews = `SELECT r.id AS review_id, r.rating, r.summary, r.body, r.recommend, r.response, r.body, r.date, r.reviewer_name, r.helpfulness,
+  COALESCE((SELECT json_agg(json_build_object('id', id, 'url', url)) from review_photo AS rp WHERE rp.review_id = r.id), '[]') AS photos
+  FROM review AS r WHERE r.product_id = ${product_id} AND r.reported = false
   ${sortQuery}
   OFFSET ${(page - 1) * count} LIMIT ${count}`;
 
   const results = await client
     .query(queryReviews)
-    .then(async (res) => {
-      await Promise.all(res.rows.map(mapPhotos));
-      client.release();
-      return res.rows;
-    })
+    .then((result) => result.rows)
     .catch((err) => {
-      client.release();
       console.log(err);
     });
+
+  await client.release();
 
   return {
     product: product_id.toString(),
