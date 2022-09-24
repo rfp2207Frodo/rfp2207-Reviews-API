@@ -18,56 +18,40 @@ const averageRating = (characteristic) => {
 };
 
 const get = async (product_id) => {
-  const queryProduct = `SELECT "1", "2", "3", "4", "5", "false", "true" FROM product WHERE id = ${product_id}`;
-
-  const queryCharacteristics = `SELECT id, name, "1", "2", "3", "4", "5" FROM product_characteristic WHERE product_id = ${product_id}`;
+  const queryProduct = `SELECT p."1", p."2", p."3", p."4", p."5", p."false", p."true",
+  (SELECT json_agg(json_build_object('id', pc.id, 'name', pc.name, '1', pc."1", '2', pc."2", '3', pc."3", '4', pc."4", '5', pc."5"))
+  FROM product_characteristic AS pc WHERE pc.product_id = ${product_id})
+  FROM product AS p WHERE id = ${product_id}`;
 
   const client = await db.connect();
 
-  let productData;
-  let characteristicData;
-
-  // probably optimize the two awaits to run at the same time
-  // since they aren't reliant on each other
-  await client
+  const results = await client
     .query(queryProduct)
-    .then((res) => {
-      const data = res.rows[0];
-      productData = data;
-    })
+    .then((result) => result.rows[0])
     .catch((err) => console.log(err));
 
-  await client
-    .query(queryCharacteristics)
-    .then(async (res) => {
-      await client.release();
-      characteristicData = res.rows;
-    })
-    .catch(async (err) => {
-      await client.release();
-      console.log(err);
-    });
-
   const formatCharacteristicData = {};
-  for (const characteristic of characteristicData) {
+  for (const characteristic of results.json_agg) {
     formatCharacteristicData[characteristic.name] = {
       id: characteristic.id,
       value: averageRating(characteristic),
     };
   }
 
+  await client.release();
+
   return {
     product_id: product_id.toString(),
     ratings: {
-      1: productData['1'],
-      2: productData['2'],
-      3: productData['3'],
-      4: productData['4'],
-      5: productData['5'],
+      1: results['1'],
+      2: results['2'],
+      3: results['3'],
+      4: results['4'],
+      5: results['5'],
     },
     recommended: {
-      false: productData.false,
-      true: productData.true,
+      false: results.false,
+      true: results.true,
     },
     characteristics: formatCharacteristicData,
   };
