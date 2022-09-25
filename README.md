@@ -24,10 +24,15 @@ Launches the test runner in the interactive watch mode.
 This API is made using PostgresQL and node.JS. To initialize this project, you must first set up a postgreSQL server, then create a .env file in the root directory of the repo. The details in the .env should resemble:
 
 PORT=####
+
 SQLPORT=####
+
 DATABASE=####
+
 HOST=####
+
 USERNAME=####
+
 PASSWORD=####
 
 ## Built With
